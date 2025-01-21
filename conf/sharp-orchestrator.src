@@ -1,0 +1,295 @@
+#!/bin/bash
+######################################################################
+#
+#   Author:     ETHON SHIELD SL
+#   Version:    0.0.1
+#   License:    AGPLv3
+#   Copyright:  Copyright (C) 2021-2025, 5G Sharp Orchestrator
+#   Email:      sharp-orchestrator@ethonshield.com
+#
+######################################################################
+
+
+########## 5G SHARP ORCHESTRATOR CONFIGURATION ##########
+#
+# SHARP_ORCHESTRATOR_IP_ADDRESS:    IP address where the repository has been cloned, same as NRCORE 
+# SHARP_ORCHESTRATOR_USERNAME:      Name of the user that holds the sharp-orchestrator project, same as NRCORE
+# SHARP_ORCHESTRATOR_WORKING_DIR:   Directory where the sharp-orchestrator project has been cloned
+#
+#########################################################
+
+SHARP_ORCHESTRATOR_IP_ADDRESS=127.0.0.1
+SHARP_ORCHESTRATOR_USERNAME=""
+SHARP_ORCHESTRATOR_WORKING_DIR=""
+
+########## NETWORK GENERAL PARAMETERS CONFIGURATION ##########
+#
+# MCC:                    Mobile Country Code - 3 digits decimal number
+# MNC:                    Mobile Network Code - 2 or 3 digits decimal number
+# TAC:                    Tracking Area Code - Decimal number
+# DEBUG:                  Show debug logs - "true" or "false"
+# DNS_IP_ADDRESS:         IP address of the DNS server - default 8.8.8.8
+# DEPLOY_NRCORE_ONLY:     Deploy only the nrcore - "true" or "false"
+# BACKUP_DIR_PREFIX:      String to use as prefix for the backup directory generated after every execution 
+#
+#########################################################
+
+MCC=001
+MNC=01
+TAC=1
+DEBUG="false" 
+DNS_IP_ADDRESS="8.8.8.8"
+DEPLOY_NRCORE_ONLY="false" 
+BACKUP_DIR_PREFIX="" 
+
+########## NRCORE CONFIGURATION ##########
+#
+# NRCORE_TECH:                            Type of technology to deploy as 5g network core - "OAI" or "OPEN5GS"
+# INT_ALGO_PRIORITY_LIST:                 Integrity algorithm priority list, separated by commas.
+#                                         Supported values in OAI: NIA0,NIA1,NIA2,NIA3,NIA4,NIA5,NIA6,NIA7
+#                                         Supported values in Open5GS: NIA0,NIA1,NIA2,NIA3
+# CIPH_ALGO_PRIORITY_LIST:                Ciphering algorithm priority list, separated by commas.
+#                                         Supported values in OAI: NEA0,NEA1,NEA2,NEA3,NEA4,NEA5,NEA6,NEA7
+#                                         Supported values in Open5GS: NEA0,NEA1,NEA2,NEA3
+#
+## Specific to OAI technology
+# NRCORE_DEPLOYMENT_VERSION:              OAI docker images version used: "v2.0.1" or "v2.1.0"
+# NRCORE_OAI_WD:                          Path where oai-cn5g-fed repository has been cloned 
+# NRCORE_DC_IMAGES_TAGS_PERSONALIZED:     Define any specific docker images that want to be used instead of the default ones.
+#                                         The format is ["<NF_name>"]="<docker_image_name:docker_image_tag>"
+#                                         <NF_name> options: "AMF", "NRF", "SMF", "UPF", "AUSF", "UDR", "UDM", "UPF-VPP", "TRF-GEN-CN5G"
+#
+## Specific to Open5GS technology
+# NRCORE_OPEN5GS_WD:                      Path where open5gs repository has been cloned
+#
+##########################################
+
+# General NRCORE parameters
+NRCORE_TECH=OPEN5GS
+INT_ALGO_PRIORITY_LIST=NIA0,NIA1
+CIPH_ALGO_PRIORITY_LIST=NEA0,NEA1,NEA2 
+
+# Specific to OAI technology
+NRCORE_DEPLOYMENT_VERSION="v2.1.0" 
+NRCORE_OAI_WD=""
+declare -A NRCORE_DC_IMAGES_TAGS_PERSONALIZED
+NRCORE_DC_IMAGES_TAGS_PERSONALIZED=(
+  # Example
+  #["AMF"]="my-amf:my-tag"
+)
+
+# Specific to Open5GS technology
+NRCORE_OPEN5GS_WD=""
+
+########## GNB CONFIGURATION ##########
+#
+# GNB_TECH:                               Type of technology to deploy a gnb node - "OAI" or "SRS"
+# GNB_IP_ADDRESS:                         IP Address of the machine that holds the software of the gnb
+# GNB_USERNAME:                           Valid username on the machine that holds the software of the gnb
+# GNB_WORKING_DIR:                        Specify directory where gNB files are going to be stored.
+#                                         It is recommended to create one as all the files inside the specified one will be deleted
+# ARFCN:                                  NRARFCN used 
+#
+## Specific to OAI technology
+# NR_SOFTMODEM_BIN:                       Path of the binary file that excutes the software of the gnb in the remote machine 
+# POINT_A:                                Reference point A for the ARFCN selected
+#
+## Specific to srsRAN technology
+# SRS_GNB_BIN:                            Path of the binary file that excutes the software of the gnb in the remote machine
+# BAND:                                   NRARFCN band used
+# CHANNEL_BW:                             Channel Bandwidth
+# SCS:                                    Subcarrier spacing (in kHz). Options are: "15", "30", "60", "120" and "240"
+#
+#######################################
+
+GNB_TECH=SRS
+GNB_IP_ADDRESS=127.0.0.1
+GNB_USERNAME=""
+GNB_WORKING_DIR=""
+ARFCN="641280"
+
+# Specific to OAI technology
+NR_SOFTMODEM_BIN=""
+POINT_A="640008"
+
+
+# Specific to srsRAN technology
+SRS_GNB_BIN=""
+BAND="78"
+CHANNEL_BW="20" 
+SCS="30" # Subcarrier spacing
+
+
+########################################
+##### POST PROCESSING OF VARIABLES #####
+########################################
+
+########### NETWORK GENERAL PARAMETERS POST PROCESSING ###########
+#
+# LOG_FILE:           File path where log output will be stored
+# ERROR_LOG_FILE:     File path where error log output will be stored
+# SUFFIX:             SUFFIX used in the configuration files
+#
+##################################################################
+
+LOG_FILE=${SHARP_ORCHESTRATOR_WORKING_DIR}/logs/sharp_orchestrator.log
+ERROR_LOG_FILE=${SHARP_ORCHESTRATOR_WORKING_DIR}/logs/error.log
+SUFFIX=".BASE"
+
+########### NRCORE POST PROCESSING ###########
+#
+# NRCORE_IP_ADDRESS:            IP Address of the machine that holds the software of the core. Current version does not support a separate machine for the CORE
+# NRCORE_USERNAME:              Valid username on the machine that holds the software of the core
+# NRCORE_WORKING_DIR:           Directory where the necessary scripts and configuration files are stored (Without trailing /)
+# AMF_IP_ADDRESS:               AMF IP address, dependant on the technology
+#
+## Specific to OAI technology
+# NRCORE_DOCKER_COMPOSE_WD:     Directory where all the docker-compose files and databases are going to be copied to
+# NRCORE_NETWORK:               OAI network for the gNB to reach
+# DC_FILE:                      Docker compose file name used 
+# DC_FILE_PATH:                 File path of the docker compose file used 
+# DC_CONFIG_FILE:               Docker compose config file name used
+# DC_CONFIG_FILE_PATH:          File path of the docker compose config file used
+# DDBB_FILE:                    Database file name used
+# DDBB_FILE_PATH:               File path of the database file used
+# NRCORE_DC_IMAGES_TAGS:        Associative array to relate network function name with their image:tag. 
+#                               The default image:tag used are the ones downloaded from the oai repository
+# BASIC_DEPLOYMENT:             Docker images needed for the basic deployment. Different deployments may need more/less network functions.
+#
+## Specific to Open5GS technology
+# NR_BIN_CONF:                  Associative array to relate open5gs processes and their configuration files
+# NR_BIN_INDEX:                 Needed open5gs processes to deploy the network
+# NR_BIN_NAME:                  Associative array to relate open5gs processes and NF names
+#
+##############################################
+
+NRCORE_IP_ADDRESS=${SHARP_ORCHESTRATOR_IP_ADDRESS} 
+NRCORE_USERNAME=${SHARP_ORCHESTRATOR_USERNAME} 
+NRCORE_WORKING_DIR=${SHARP_ORCHESTRATOR_WORKING_DIR}/nodes/core 
+
+if [[ "${NRCORE_TECH}" == "OAI" ]]; then
+  AMF_IP_ADDRESS="192.168.70.132" 
+elif [[ "${NRCORE_TECH}" == "OPEN5GS" ]]; then
+  AMF_IP_ADDRESS="127.0.0.100" 
+  if [[ ("${NRCORE_IP_ADDRESS}" != "${GNB_IP_ADDRESS}") ]]; then
+    AMF_IP_ADDRESS=${NRCORE_IP_ADDRESS}
+  fi
+fi
+
+if [[ "${NRCORE_TECH}" == "OAI" ]]; then
+  NRCORE_DOCKER_COMPOSE_WD=${NRCORE_OAI_WD}/docker-compose 
+  NRCORE_NETWORK="192.168.70.128/26"
+  DC_FILE=docker-compose-basic-nrf.yaml
+  DC_FILE_PATH=${NRCORE_WORKING_DIR}/conf/${NRCORE_DEPLOYMENT_VERSION}/${DC_FILE}
+  DC_CONFIG_FILE=basic_nrf_config.yaml
+  DC_CONFIG_FILE_PATH=${NRCORE_WORKING_DIR}/conf/${NRCORE_DEPLOYMENT_VERSION}/${DC_CONFIG_FILE}
+  DDBB_FILE=oai_db2.sql
+  DDBB_FILE_PATH=${NRCORE_WORKING_DIR}/conf/${NRCORE_DEPLOYMENT_VERSION}/${DDBB_FILE}
+
+  # DOCKER-COMPOSE IMAGES AND TAGS FOR OAI CORE
+
+  declare -A NRCORE_DC_IMAGES_TAGS
+  NRCORE_DC_IMAGES_TAGS=(
+    ["UBUNTU"]="ubuntu:bionic"
+    ["MYSQL"]="mysql:8.0"
+    ["AMF"]="oaisoftwarealliance/oai-amf:${NRCORE_DEPLOYMENT_VERSION}"
+    ["NRF"]="oaisoftwarealliance/oai-nrf:${NRCORE_DEPLOYMENT_VERSION}"
+    ["UPF"]="oaisoftwarealliance/oai-upf:${NRCORE_DEPLOYMENT_VERSION}"
+    ["SMF"]="oaisoftwarealliance/oai-smf:${NRCORE_DEPLOYMENT_VERSION}"
+    ["UDR"]="oaisoftwarealliance/oai-udr:${NRCORE_DEPLOYMENT_VERSION}"
+    ["UDM"]="oaisoftwarealliance/oai-udm:${NRCORE_DEPLOYMENT_VERSION}"
+    ["AUSF"]="oaisoftwarealliance/oai-ausf:${NRCORE_DEPLOYMENT_VERSION}"
+    ["UPF-VPP"]="oaisoftwarealliance/oai-upf-vpp:${NRCORE_DEPLOYMENT_VERSION}"
+    ["TRF-GEN-CN5G"]="oaisoftwarealliance/trf-gen-cn5g:latest"
+  )
+
+  BASIC_DEPLOYMENT="mysql oai-amf oai-nrf oai-upf oai-smf oai-udr oai-udm oai-ausf oai-upf-vpp"
+  LOGGABLE_NFS="oai-amf oai-nrf oai-upf oai-smf oai-udr oai-udm oai-ausf oai-upf"
+
+  # Add personalized images 
+  if [[ "${#NRCORE_DC_IMAGES_TAGS_PERSONALIZED[@]}" -ge 1 ]]; then
+    for i in "${!NRCORE_DC_IMAGES_TAGS_PERSONALIZED[@]}"; do
+      unset NRCORE_DC_IMAGES_TAGS["${i}"]
+      NRCORE_DC_IMAGES_TAGS["${i}"]="${NRCORE_DC_IMAGES_TAGS_PERSONALIZED[${i}]}"
+    done
+  fi
+
+elif [[ "${NRCORE_TECH}" == "OPEN5GS" ]]; then
+
+  declare -A NR_BIN_CONF
+  NR_BIN_CONF=(
+    ["open5gs-nrfd"]="nrf.yaml"
+    ["open5gs-scpd"]="scp.yaml"
+    ["open5gs-amfd"]="amf.yaml"
+    ["open5gs-smfd"]="smf.yaml"
+    ["open5gs-upfd"]="upf.yaml"
+    ["open5gs-ausfd"]="ausf.yaml"
+    ["open5gs-udmd"]="udm.yaml"
+    ["open5gs-pcfd"]="pcf.yaml"
+    ["open5gs-nssfd"]="nssf.yaml"
+    ["open5gs-bsfd"]="bsf.yaml"
+    ["open5gs-udrd"]="udr.yaml"
+  )
+
+  declare -a NR_BIN_INDEX
+  NR_BIN_INDEX=("open5gs-nrfd" "open5gs-scpd" "open5gs-amfd" "open5gs-smfd" "open5gs-upfd" "open5gs-ausfd" "open5gs-udmd" "open5gs-pcfd" "open5gs-nssfd" "open5gs-bsfd" "open5gs-udrd") 
+
+  declare -A NR_BIN_NAME
+  NR_BIN_NAME=(
+    ["open5gs-nrfd"]="NRF"
+    ["open5gs-scpd"]="SCP"
+    ["open5gs-amfd"]="AMF"
+    ["open5gs-smfd"]="SMF"
+    ["open5gs-upfd"]="UPF"
+    ["open5gs-ausfd"]="AUSF"
+    ["open5gs-udmd"]="UDM"
+    ["open5gs-pcfd"]="PCF"
+    ["open5gs-nssfd"]="NSSF"
+    ["open5gs-bsfd"]="BSF"
+    ["open5gs-udrd"]="UDR"
+  )
+
+  declare -A NR_BIN_LOG
+  NR_BIN_LOG=(
+    ["open5gs-nrfd"]="nrf.log"
+    ["open5gs-scpd"]="scp.log"
+    ["open5gs-amfd"]="amf.log"
+    ["open5gs-smfd"]="smf.log"
+    ["open5gs-upfd"]="upf.log"
+    ["open5gs-ausfd"]="ausf.log"
+    ["open5gs-udmd"]="udm.log"
+    ["open5gs-pcfd"]="pcf.log"
+    ["open5gs-nssfd"]="nssf.log"
+    ["open5gs-bsfd"]="bsf.log"
+    ["open5gs-udrd"]="udr.log"
+    )  
+
+    LOGGABLE_NFS="nrf scp amf smf upf ausf udm pcf nssf bsf udr"
+fi
+
+################################ GNB POST PROCESSING ################################
+#
+# CENTRALISED_GNB_CONFIG_FILE:        Path of the gnb base conf file 
+# GNB_CONFIG_FILE:                    Path of the gnb conf file that is going to be used in the gnb server. 
+#                                     NOT the path of the centralised gnb conf file that is inside this repository
+# VALID_PARAMS:                       Parameters that can be updated on real time
+#
+#####################################################################################
+
+if [[ "${GNB_TECH}" == "OAI" ]]; then
+  CENTRALISED_GNB_CONFIG_FILE=${SHARP_ORCHESTRATOR_WORKING_DIR}/nodes/gnb/conf/gnb.sa.band78.fr1.106PRB.usrpb210.conf 
+  GNB_CONFIG_FILE=${GNB_WORKING_DIR}/conf/gnb.sa.band78.fr1.106PRB.usrpb210.conf 
+else
+  CENTRALISED_GNB_CONFIG_FILE=${SHARP_ORCHESTRATOR_WORKING_DIR}/nodes/gnb/conf/gnb_b210_20MHz.yml 
+  GNB_CONFIG_FILE=${GNB_WORKING_DIR}/conf/gnb_b210_20MHz.yml
+fi
+
+declare -A VALID_PARAMS
+VALID_PARAMS=(
+  ["ARFCN"]="${ARFCN}"
+  ["POINT_A"]="${POINT_A}"
+  ["BAND"]="${BAND}"
+  ["CHANNEL_BW"]="${CHANNEL_BW}"
+  ["SCS"]="${SCS}"
+)
+
