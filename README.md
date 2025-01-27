@@ -211,7 +211,7 @@ To configure the 5G Sharp Orchestrator you will need to modify the corresponding
 **SHARP ORCHESTRATOR**:
 - **SHARP_ORCHESTRATOR_IP_ADDRESS** - IP address where the repository has been cloned, same as NRCORE
 - **SHARP_ORCHESTRATOR_USERNAME** - Name of the user that holds the sharp-orchestrator project, same as NRCORE
-- **SHARP_ORCHESTRATOR_WD** - Directory where the sharp-orchestrator project has been cloned
+- **SHARP_ORCHESTRATOR_WORKING_DIR** - Directory where the sharp-orchestrator project has been cloned
 
 **GENERAL**:
 
@@ -307,8 +307,8 @@ It will be necessary to modify /etc/.sudoers file (via visudo for example) in or
 
 Furthermore, for the nodes to be able to talk to each other via ssh, it is important to store the public ssh keys of the corresponding users. 
 
-1. Generate ssh key pair: ssh-key-gen -t rsa
-2. Copy public pair into remote machine: ssh-copy-id -i ~/.ssh/id_rsa.pub <remote_username>@<remote_ip_address>
+1. Generate ssh key pair: `ssh-key-gen -t rsa`
+2. Copy public pair into remote machine: `ssh-copy-id -i ~/.ssh/id_rsa.pub <remote_username>@<remote_ip_address>`
 
 # Installation
 
@@ -594,7 +594,7 @@ The new set value will appear in the menu, as it is shown in the images below
 <img src="images/SUBMENU_update_parameters_arfcn_setted.png">
 
 After setting all the values you want to update, choose the "Update parameters" option in the interactive menu for the changes to take place.
-This action will stop the running gNB instance and start a new want with the updated parameters. 
+This action will stop the running gNB instance and start a new one with the updated parameters. 
 Any error in the gNB execution due to invalid parameters selection will be prompted in the log screen.
 
 

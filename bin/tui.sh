@@ -2,14 +2,12 @@
 #######################################################################
 ##
 ##   Author:     ETHON SHIELD SL
-##   Version:    0.0.1
+##   Version:    0.0.2
 ##   License:    AGPLv3
 ##   Copyright:  Copyright (C) 2021-2025, 5G Sharp Orchestrator
 ##   Email:      sharp-orchestrator@ethonshield.com
 ##
 ########################################################################
-
-cp ../conf/sharp-orchestrator.src ${HOME}/
 
 source ${HOME}/sharp-orchestrator.src
 source ${SHARP_ORCHESTRATOR_WORKING_DIR}/bin/general_functions.sh
