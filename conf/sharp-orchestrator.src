@@ -2,7 +2,7 @@
 ######################################################################
 #
 #   Author:     ETHON SHIELD SL
-#   Version:    0.0.2
+#   Version:    0.0.3
 #   License:    AGPLv3
 #   Copyright:  Copyright (C) 2021-2025, 5G Sharp Orchestrator
 #   Email:      sharp-orchestrator@ethonshield.com
@@ -65,7 +65,7 @@ BACKUP_DIR_PREFIX=""
 
 # General NRCORE parameters
 NRCORE_TECH=OPEN5GS
-INT_ALGO_PRIORITY_LIST=NIA0,NIA1
+INT_ALGO_PRIORITY_LIST=NIA1,NIA0
 CIPH_ALGO_PRIORITY_LIST=NEA0,NEA1,NEA2 
 
 # Specific to OAI technology
