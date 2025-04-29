@@ -2,7 +2,7 @@
 #######################################################################
 #
 #   Author:     ETHON SHIELD SL
-#   Version:    0.0.4
+#   Version:    0.0.5
 #   License:    AGPLv3
 #   Copyright:  Copyright (C) 2021-2025, 5G Sharp Orchestrator
 #   Email:      sharp-orchestrator@ethonshield.com
@@ -499,20 +499,28 @@ function check_repositories {
       if [[ "${GNB_TECH}" == "OAI" ]]; then	
 
         # For OAI gNB we need to check that the nr-softmodem binary exists
-        if ssh ${GNB_USERNAME}@${GNB_IP_ADDRESS} "[[ -f ${NR_SOFTMODEM_BIN} ]]"; then 
-          printf "     nrsoftmodem bin ... ${SUCCESS}YES${NC} \n"
+        if [[ -z "${NR_SOFTMODEM_BIN}" ]]; then
+          printf "     nrsoftmodem bin ... ${ERROR}NO${NC} - EMPTY variable\n"
         else
-          printf "     nrsoftmodem bin ... ${ERROR}NO${NC} \n"
-          correct_initialization="False"
+          if ssh ${GNB_USERNAME}@${GNB_IP_ADDRESS} "[[ -f ${NR_SOFTMODEM_BIN} ]]"; then 
+            printf "     nrsoftmodem bin ... ${SUCCESS}YES${NC} \n"
+          else
+            printf "     nrsoftmodem bin ... ${ERROR}NO${NC} - not a regular file\n"
+            correct_initialization="False"
+          fi
         fi
       else
 
         # For SRS gNB we need to check that the gnb binary exists
-        if ssh ${GNB_USERNAME}@${GNB_IP_ADDRESS} "[[ -f ${SRS_GNB_BIN} ]]"; then
-          printf "     SRS gnb bin ... ${SUCCESS}YES${NC} \n"
+        if [[ -z "${SRS_GNB_BIN}" ]]; then
+          printf "     SRS gnb bin ... ${ERROR}NO${NC} - EMPTY variable\n"
         else
-          printf "     SRS gnb bin ... ${ERROR}NO${NC} \n"
-          correct_initialization="False"
+          if ssh ${GNB_USERNAME}@${GNB_IP_ADDRESS} "[[ -f ${SRS_GNB_BIN} ]]"; then
+            printf "     SRS gnb bin ... ${SUCCESS}YES${NC} \n"
+          else
+            printf "     SRS gnb bin ... ${ERROR}NO${NC} - not a regular file\n"
+            correct_initialization="False"
+          fi
         fi
       fi
 
