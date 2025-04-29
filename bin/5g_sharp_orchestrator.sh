@@ -2,7 +2,7 @@
 #######################################################################
 #
 #   Author:     ETHON SHIELD SL
-#   Version:    0.0.3
+#   Version:    0.0.4
 #   License:    AGPLv3
 #   Copyright:  Copyright (C) 2021-2025, 5G Sharp Orchestrator
 #   Email:      sharp-orchestrator@ethonshield.com

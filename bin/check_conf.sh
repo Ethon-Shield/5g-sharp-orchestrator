@@ -2,7 +2,7 @@
 #######################################################################
 #
 #   Author:     ETHON SHIELD SL
-#   Version:    0.0.3
+#   Version:    0.0.4
 #   License:    AGPLv3
 #   Copyright:  Copyright (C) 2021-2025, 5G Sharp Orchestrator
 #   Email:      sharp-orchestrator@ethonshield.com
@@ -31,40 +31,44 @@ NC='\033[0m' # No Color
 #####  BASIC DIRS #####
 #######################
 
-function check_basic_directories {
-  local are_basic_dir_ok="YES"
+function check_basic_variables {
+  local are_basic_var_ok="YES"
 
   echo "##################################"
-  echo "Checking basic directories"
+  echo "Checking basic variables"
   echo "##################################"
 
   if [[ -z "${SHARP_ORCHESTRATOR_WORKING_DIR}" ]]; then
-      printf "SHARP_ORCHESTRATOR_WORKING_DIR is empty ... ${ERROR}EMPTY${NC}\n"
-      are_basic_dir_ok="NO"
+    printf "SHARP_ORCHESTRATOR_WORKING_DIR is empty ... ${ERROR}EMPTY${NC}\n"
+    are_basic_var_ok="NO"
+  fi
+  
+  if [[ -z "${NRCORE_TECH}" ]]; then
+    printf "NRCORE_TECH is empty ... ${ERROR}EMPTY${NC}\n"
+    are_basic_var_ok="NO"
   fi
 
-  if [[ -z "${NRCORE_OAI_WD}" ]]; then
-      printf "NRCORE_OAI_WD is empty ... ${ERROR}EMPTY${NC}\n"
-      are_basic_dir_ok="NO"
+  if [[ -z "${NRCORE_OAI_WD}" && "${NRCORE_TECH}" == "OAI" ]]; then
+    printf "NRCORE_OAI_WD is empty ... ${ERROR}EMPTY${NC}\n"
+    are_basic_var_ok="NO"
   fi
 
-  if [[ -z "${NRCORE_OPEN5GS_WD}" ]]; then
-      printf "NRCORE_OPEN5GS_WD is empty ... ${ERROR}EMPTY${NC}\n"
-      are_basic_dir_ok="NO"
+  if [[ -z "${NRCORE_OPEN5GS_WD}" && "${NRCORE_TECH}" == "OPEN5GS" ]]; then
+    printf "NRCORE_OPEN5GS_WD is empty ... ${ERROR}EMPTY${NC}\n"
+    are_basic_var_ok="NO"
   fi
 
-  if [[ "${are_basic_dir_ok}" == "NO" ]]; then
+  if [[ "${are_basic_var_ok}" == "NO" ]]; then
     echo ""
-    echo "Please add the full paths of the corresponding directories."
+    echo "Please add the full paths of the corresponding variables."
     exit 1
   else
-    printf "BASIC directories are ${SUCCESS}OK${NC}\n"
+    printf "BASIC variables are ${SUCCESS}OK${NC}\n"
   fi
 
   echo ""
 
 }
-
 
 ###############################
 #####  BINARIES CHECK  #####
@@ -246,27 +250,27 @@ function check_nrcore_info {
   else
     printf "CORE IP ADDRESS ... ${ERROR}NO${NC} - Check if ${NRCORE_IP_ADDRESS} is your current IP address\n"
     correct_initialization="False"
-  fi
+    fi
 
-  find_core_username=$(grep -c ${NRCORE_USERNAME} /etc/passwd)
-  if [[ "${find_core_username}" -ge 1 ]]; then 
-    printf "CORE USERNAME ... ${SUCCESS}YES${NC}\n"
-  else
-    printf "CORE USERNAME ... ${ERROR}NO${NC} - Check if ${NRCORE_USERNAME} is your current user\n"
-    correct_initialization="False"
-  fi
+    find_core_username=$(grep -c ${NRCORE_USERNAME} /etc/passwd)
+    if [[ "${find_core_username}" -ge 1 ]]; then 
+      printf "CORE USERNAME ... ${SUCCESS}YES${NC}\n"
+    else
+      printf "CORE USERNAME ... ${ERROR}NO${NC} - Check if ${NRCORE_USERNAME} is your current user\n"
+      correct_initialization="False"
+      fi
 
-  find_core_wd=$([[ -d ${NRCORE_WORKING_DIR} ]] && echo 1 || echo 0)
-  if [[ "${find_core_wd}" -eq 1 ]]; then 
-    printf "CORE WORKING DIR ... ${SUCCESS}YES${NC}\n"
-  else
-    printf "CORE WORKING DIR ... ${ERROR}NO${NC} - NRCORE_WORKING_DIR: ${NRCORE_WORKING_DIR}, should be the same as $(cd ../ && pwd) directory\n"
-    correct_initialization="False"
-  fi
+      find_core_wd=$([[ -d ${NRCORE_WORKING_DIR} ]] && echo 1 || echo 0)
+      if [[ "${find_core_wd}" -eq 1 ]]; then 
+        printf "CORE WORKING DIR ... ${SUCCESS}YES${NC}\n"
+      else
+        printf "CORE WORKING DIR ... ${ERROR}NO${NC} - NRCORE_WORKING_DIR: ${NRCORE_WORKING_DIR}, should be the same as $(cd ../ && pwd) directory\n"
+        correct_initialization="False"
+      fi
 
-  echo ""
+      echo ""
 
-}
+    }
 
 ######################################################
 #####  DOCKER IMAGES CHECK | OPEN5GS SERVICES  #####
@@ -343,9 +347,9 @@ function check_nrcore_services {
 
     echo ""
 
-  fi
+    fi
 
-}
+  }
 
 ########################################
 #####  4 Checking SSH Connections  #####
@@ -546,20 +550,20 @@ function check_repositories {
 function check_sudoers {
 
   local orch_and_core_sudo_commands=$(cat <<END
-/usr/bin/kill -9 \*
-/usr/bin/chown -R \* /tmp
-/usr/bin/chown -R \* /logs
-/usr/bin/python3 core-network.py --type start-basic
-/usr/bin/python3 core-network.py --type stop-basic
-/usr/sbin/ip tuntap add name ogstun mode tun
-/usr/sbin/ip addr del 10.45.0.1/16 dev ogstun
-/usr/sbin/ip addr add 10.45.0.1/16 dev ogstun
-/usr/sbin/ip addr del 2001\\\:db8\\\:cafe\\\:\\\:1/48 dev ogstun
-/usr/sbin/ip addr add 2001\\\:db8\\\:cafe\\\:\\\:1/48 dev ogstun
-/usr/sbin/ip link set ogstun up
-/usr/sbin/sysctl net.ipv4.conf.all.forwarding\\\=1
-/usr/sbin/iptables -P FORWARD ACCEPT
-/usr/sbin/iptables -S
+  /usr/bin/kill -9 \*
+  /usr/bin/chown -R \* /tmp
+  /usr/bin/chown -R \* /logs
+  /usr/bin/python3 core-network.py --type start-basic
+  /usr/bin/python3 core-network.py --type stop-basic
+  /usr/sbin/ip tuntap add name ogstun mode tun
+  /usr/sbin/ip addr del 10.45.0.1/16 dev ogstun
+  /usr/sbin/ip addr add 10.45.0.1/16 dev ogstun
+  /usr/sbin/ip addr del 2001\\\:db8\\\:cafe\\\:\\\:1/48 dev ogstun
+  /usr/sbin/ip addr add 2001\\\:db8\\\:cafe\\\:\\\:1/48 dev ogstun
+  /usr/sbin/ip link set ogstun up
+  /usr/sbin/sysctl net.ipv4.conf.all.forwarding\\\=1
+  /usr/sbin/iptables -P FORWARD ACCEPT
+  /usr/sbin/iptables -S
 END
 )
 
@@ -753,16 +757,16 @@ function check_src_parameters {
     if [[ "${NRCORE_TECH}" == "OPEN5GS" ]] && [[ "${NRCORE_IP_ADDRESS}" == "${GNB_IP_ADDRESS}" ]] && [[ "${NRCORE_IP_ADDRESS}" != "127.0.0.1" ]]; then
       printf "${WARNING}WARNING:${NC} OPEN5GS NRCORE and GNB IP addresses should be 127.0.0.1 if they are running on the same machine\n"
 
-    fi 
+      fi 
 
-    if [[ "${NRCORE_TECH}" == "OPEN5GS" ]] && [[ "${AMF_IP_ADDRESS}" == "${GNB_IP_ADDRESS}" ]]; then
-      printf "${ERROR}ERROR:${NC} For OPEN5GS NRCORE, AMF and GNB IP addresses cannot be the same\n"
+      if [[ "${NRCORE_TECH}" == "OPEN5GS" ]] && [[ "${AMF_IP_ADDRESS}" == "${GNB_IP_ADDRESS}" ]]; then
+        printf "${ERROR}ERROR:${NC} For OPEN5GS NRCORE, AMF and GNB IP addresses cannot be the same\n"
 
-    fi 
-  fi
+      fi 
+    fi
 
 
-  if [[ "${NRCORE_TECH}" == "OAI" ]]; then
+    if [[ "${NRCORE_TECH}" == "OAI" ]]; then
 
       #
       # NRCORE_DEPLOYMENT_VERSION can be v2.0.1 or v2.1.0
@@ -780,10 +784,10 @@ function check_src_parameters {
           NRCORE_DEPLOYMENT_VERSION variable can only be v2.0.1 or v2.1.0\n"
       fi
 
-  fi
+    fi
 
-  echo ""
-}
+    echo ""
+  }
 
 #####################
 ### Check gNB dir ###
@@ -841,7 +845,7 @@ function check_gnb_dir {
 [[ -d ${working_directory}/tmp/ ]] || mkdir ${working_directory}/tmp
 [[ -d ${working_directory}/logs/ ]] || mkdir ${working_directory}/logs
 
-check_basic_directories
+check_basic_variables
 check_binaries
 check_nrcore_info
 check_nrcore_services

@@ -598,7 +598,7 @@ This action will stop the running gNB instance and start a new one with the upda
 Any error in the gNB execution due to invalid parameters selection will be prompted in the log screen.
 
 
-##### BACKUPING UP FILES DURING EXECUTION
+##### BACKING UP FILES DURING EXECUTION
 
 Stopping the network will automatically perform a backup. This options is used if you want to perform a backup during the execution without stopping the network. 
 The backup will be saved in the sharp-orchestrator/backups directory.
@@ -693,7 +693,7 @@ echo "ARFCN:<ARFCN_VALUE>" > sharp-orchestrator/tmp/update_parameter_on_real_tim
 echo "ARFCN:<ARFCN_VALUE>;POINT_A:<POINT_A_VALUE>" > sharp-orchestrator/tmp/update_parameter_on_real_time.txt
 ```
 
-##### BACKUPING UP FILES DURING EXECUTION
+##### BACKING UP FILES DURING EXECUTION
 
 Stopping the network will automatically perform a backup. This options is used if you want to perform a backup during the execution without stopping the network. 
 The backup will be saved in the sharp-orchestrator/backups directory.
